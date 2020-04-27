@@ -5,12 +5,29 @@ import PropTypes from 'prop-types';
 import { StyleSheet, Text, View, Picker, Button } from 'react-native';
 import { TextInput } from 'react-native-gesture-handler';
 
-import { Brands } from '../data/brands';
+import { Brands, Brands2 } from '../data/brands';
 
 const Bike = () => {
 	const [brand, setBrand] = useState('');
 	const [model, setModel] = useState('');
 	const [models, setModels] = useState([]);
+
+	/*
+const year = 2014;
+console.log(Brands2.filter(brand => brand.year === year));
+const brandsForYear = 
+  [...new Set(
+    Brands2.filter(brand => brand.year === year)
+    .map(b => b.make)
+  )];
+
+console.log(brandsForYear.sort((a,b) => a<b ? -1 : a>b ? 1 : 0));
+
+// for random travel numbers
+function getRndInteger(min, max) {
+  return Math.floor(Math.random() * (max - min) ) + min;
+}
+*/
 
 	return (
 		<View style={styles.container}>
