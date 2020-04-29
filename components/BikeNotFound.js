@@ -52,13 +52,7 @@ const BikeNotFound = ({ year, make, bikeAdded }) => {
 				model,
 			});
 
-			console.log('CREATED: ', newSpec);
-
 			bikeAdded(newSpec);
-
-			// raise something to the parent,
-			// close BikeNotFound, and open
-			// BikeInfo with new info populated
 		} catch (err) {}
 	};
 

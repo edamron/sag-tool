@@ -1,7 +1,7 @@
 //@ts-check
 
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, Button } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { TextInput, TouchableOpacity } from 'react-native-gesture-handler';
 import RNPickerSelect from 'react-native-picker-select';
 
@@ -26,7 +26,7 @@ const modelPlaceholder = {
 	color: '#9EA0A4',
 };
 
-const Bike = () => {
+const Bike = ({ navigation }) => {
 	const defaultSelectedModel = {
 		front: 0,
 		rear: 0,
@@ -185,12 +185,7 @@ const Bike = () => {
 				/>
 			</View>
 			{modelSelected && (
-				<BikeInfo
-					year={selectedModel.year}
-					model={selectedModel.model}
-					front={selectedModel.front}
-					rear={selectedModel.rear}
-				/>
+				<BikeInfo spec={selectedModel} navigation={navigation} />
 			)}
 			{modelNotFount && (
 				<BikeNotFound

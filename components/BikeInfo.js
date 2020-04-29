@@ -5,19 +5,22 @@ import PropTypes from 'prop-types';
 import { StyleSheet, Text, View } from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 
-const Separator = () => {
-	return <View style={styles.separator} />;
-};
+const BikeInfo = ({ spec, navigation }) => {
+	const { year, make, model, front, rear, _id } = spec;
 
-const BikeInfo = ({ year, model, front, rear }) => {
 	return (
 		<View style={styles.container}>
 			<View style={styles.bikeInfoContainer}>
 				<Text style={styles.bigQuestion}>{`${year} ${model}`}</Text>
 				<Text style={styles.bikeInfo}>Front travel: {front}</Text>
 				<Text style={styles.bikeInfo}>Rear travel: {rear}</Text>
-				<TouchableOpacity style={styles.toStyle} onPress={() => {}}>
-					<Text style={styles.toTextStyle}>Let's set your sag!</Text>
+				<TouchableOpacity
+					style={styles.toStyle}
+					onPress={() => navigation.navigate('SetFrontSag', spec)}
+				>
+					<Text style={styles.toTextStyle}>
+						Let's set your front sag!
+					</Text>
 				</TouchableOpacity>
 			</View>
 		</View>
@@ -25,10 +28,14 @@ const BikeInfo = ({ year, model, front, rear }) => {
 };
 
 BikeInfo.propTypes = {
-	front: PropTypes.number.isRequired,
-	rear: PropTypes.number.isRequired,
-	year: PropTypes.number.isRequired,
-	model: PropTypes.string.isRequired,
+	spec: PropTypes.shape({
+		year: PropTypes.number.isRequired,
+		front: PropTypes.number.isRequired,
+		rear: PropTypes.number.isRequired,
+		make: PropTypes.string.isRequired,
+		model: PropTypes.string.isRequired,
+		_id: PropTypes.string.isRequired,
+	}).isRequired,
 };
 
 export default BikeInfo;
