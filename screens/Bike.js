@@ -1,9 +1,12 @@
 //@ts-check
 
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, Picker, Button } from 'react-native';
-import { TextInput } from 'react-native-gesture-handler';
+import { StyleSheet, Text, View, Button } from 'react-native';
+import { TextInput, TouchableOpacity } from 'react-native-gesture-handler';
 import RNPickerSelect from 'react-native-picker-select';
+
+import BikeInfo from '../components/BikeInfo';
+import BikeNotFound from '../components/BikeNotFound';
 
 import {
 	getAllMakesForYear,
@@ -39,6 +42,7 @@ const Bike = () => {
 	const [model, setModel] = useState('');
 	const [selectedModel, setSelectedModel] = useState(defaultSelectedModel);
 	const [modelSelected, setModelSelected] = useState(false);
+	const [modelNotFount, setModelNotFound] = useState(false);
 
 	const initState = () => {
 		setMakes([]);
@@ -47,12 +51,25 @@ const Bike = () => {
 		setMake('');
 		setSelectedModel(defaultSelectedModel);
 		setModelSelected(false);
+		setModelNotFound(false);
 	};
 
 	const getBrandsForYear = async () => {
 		initState();
 
-		let brandNames = await getAllMakesForYear(year);
+		//let brandNames = await getAllMakesForYear(year);
+		let brandNames = [
+			'Yamaha',
+			'Honda',
+			'Ducati',
+			'Kawasaki',
+			'BMW',
+			'Suzuki',
+			'Aprilia',
+			'Triumph',
+			'KTM',
+		];
+		brandNames.sort();
 		let brands = brandNames.map((name) =>
 			Object.assign({ label: name, value: name }),
 		);
@@ -64,50 +81,86 @@ const Bike = () => {
 		if (!make) return;
 
 		(async () => {
+			//TODO start replicated below!
 			let models = await getAllModelsForYearAndMake(year, make);
 			const modelsForYearAndMake = models.map((m) =>
 				Object.assign({ label: m.model, value: m._id }),
 			);
 
+			// in case it's needed
+			modelsForYearAndMake.unshift({
+				label: 'Not seeing your model?',
+				value: 'not found',
+			});
+
 			setModels(modelsForYearAndMake);
+			//TODO end replicated below!
+
 			setModel('');
 			setSelectedModel(defaultSelectedModel);
 			setModelSelected(false);
+			setModelNotFound(false);
 		})();
 	}, [make]);
 
-	/*	const getRndInteger = (min, max) => {
-		return Math.floor(Math.random() * (max - min + 1)) + min;
-	};
-*/
 	useEffect(() => {
 		if (!model) return;
 
-		(async () => {
-			let spec = await getSpecModelId(model);
-
-			//TODO: remove once I have real travel numbers
-			//spec.front = getRndInteger(70, 230);
-			//spec.rear = getRndInteger(100, 230);
-
-			setSelectedModel(spec);
-			setModelSelected(true);
-		})();
+		if (model === 'not found') {
+			setModelNotFound(true);
+			setModelSelected(false);
+		} else {
+			(async () => {
+				let spec = await getSpecModelId(model);
+				setSelectedModel(spec);
+				setModelNotFound(false);
+				setModelSelected(true);
+			})();
+		}
 	}, [model]);
+
+	const newBikeAdded = async (bike) => {
+		//TODO start replicated above!
+		let models = await getAllModelsForYearAndMake(year, make);
+		const modelsForYearAndMake = models.map((m) =>
+			Object.assign({ label: m.model, value: m._id }),
+		);
+
+		// in case it's needed
+		modelsForYearAndMake.unshift({
+			label: 'Not seeing your model?',
+			value: 'not found',
+		});
+
+		setModels(modelsForYearAndMake);
+		//TODO end replicated above!
+
+		setModel(bike._id);
+	};
+
+	// can be removed soon
+	// NOTE: model is mongo _id
+	const handleSetModel = (model) => {
+		setModel(model);
+	};
 
 	return (
 		<View style={styles.container}>
 			<Text style={styles.bigQuestion}>First, let's find your bike!</Text>
 			<View style={styles.textInputContainer}>
-				<Text style={styles.textLabel}>Year:</Text>
+				<Text style={[styles.textLabel, { marginTop: 10 }]}>Year:</Text>
 				<TextInput
 					style={styles.textInput}
 					maxLength={4}
 					keyboardType={'numeric'}
 					onChangeText={(value) => setYear(value)}
-					/* onSubmitEditing={handleYearSubmit} */
 				/>
-				<Button onPress={getBrandsForYear} title="Load Makes" />
+				<TouchableOpacity
+					style={styles.toStyle}
+					onPress={getBrandsForYear}
+				>
+					<Text style={styles.toTextStyle}>Load Makes</Text>
+				</TouchableOpacity>
 			</View>
 			<View style={styles.textInputContainer}>
 				<Text style={styles.pickerLabel}>Make:</Text>
@@ -124,19 +177,27 @@ const Bike = () => {
 				<RNPickerSelect
 					style={pickerSelectStyles}
 					placeholder={modelPlaceholder}
-					onValueChange={(selectedModel) => setModel(selectedModel)}
+					onValueChange={(selectedModel) =>
+						handleSetModel(selectedModel)
+					}
 					items={models}
 					value={model}
 				/>
 			</View>
 			{modelSelected && (
-				<View style={styles.container}>
-					<Text>
-						{`${selectedModel.year} ${selectedModel.model}`}
-					</Text>
-					<Text>Front travel: {selectedModel.front}</Text>
-					<Text>Rear travel: {selectedModel.rear}</Text>
-				</View>
+				<BikeInfo
+					year={selectedModel.year}
+					model={selectedModel.model}
+					front={selectedModel.front}
+					rear={selectedModel.rear}
+				/>
+			)}
+			{modelNotFount && (
+				<BikeNotFound
+					year={parseInt(year)}
+					make={make}
+					bikeAdded={newBikeAdded}
+				/>
 			)}
 		</View>
 	);
@@ -154,8 +215,6 @@ Bike.defaultProps = {
 };
 */
 
-Bike.displayName = 'Bike';
-
 export default Bike;
 
 const pickerSelectStyles = StyleSheet.create({
@@ -168,6 +227,8 @@ const pickerSelectStyles = StyleSheet.create({
 		borderRadius: 4,
 		color: 'black',
 		paddingRight: 30, // to ensure the text is never behind the icon
+		backgroundColor: 'white',
+		marginTop: 2,
 	},
 	inputAndroid: {
 		fontSize: 16,
@@ -178,12 +239,15 @@ const pickerSelectStyles = StyleSheet.create({
 		borderRadius: 8,
 		color: 'black',
 		paddingRight: 30, // to ensure the text is never behind the icon
+		backgroundColor: 'white',
+		marginTop: 2,
 	},
 });
 
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
+		backgroundColor: '#dddddd',
 	},
 	bigQuestion: {
 		margin: 20,
@@ -205,11 +269,25 @@ const styles = StyleSheet.create({
 	},
 	textInput: {
 		borderColor: '#D6D7DA',
+		backgroundColor: 'white',
 		borderRadius: 3,
 		borderWidth: 2,
 		height: 30,
-		width: 50,
+		width: 70,
 		padding: 5,
-		fontSize: 12,
+		fontSize: 16,
+		marginTop: 3,
+	},
+	toStyle: {
+		backgroundColor: '#ffe74a',
+		borderColor: 'darkgrey',
+		borderWidth: 2,
+		marginLeft: 4,
+		padding: 4,
+		borderRadius: 5,
+	},
+	toTextStyle: {
+		fontSize: 20,
+		color: 'black',
 	},
 });
