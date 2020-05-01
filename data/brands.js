@@ -22,6 +22,8 @@ which returns { "_id" : ObjectId("5ea730dcbc29de287aad149a"), "model" : "Scrambl
 a regular find, returning only make
 db["suspension-specs"].find({ year: 2014 }, { make: 1 })
 
+// to look up specs: https://www.motorcyclespecs.co.za/index.htm
+
 the rows I added to the database:
 
 db["suspension-specs"].insertMany([
